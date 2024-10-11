@@ -3,32 +3,28 @@ import random
 import winsound
 import time
 import threading
-import numpy as np  # Lisätään numpy
+import numpy as np  
 
-# Asetetaan pääikkuna ja Canvas
 root = tk.Tk()
 root.title("Tulivuorenpurkaus - Satunnaiset saaret")
-canvas = tk.Canvas(root, width=800, height=600, bg='lightblue')  # Taustaväri merelle
+canvas = tk.Canvas(root, width=800, height=600, bg='lightblue')
 canvas.pack()
 
-# Ladataan saarten kuvat
-ensimmainen_saari_img = tk.PhotoImage(file="saari.png").subsample(8, 8)  # Ensimmäisen saaren kuva
-uusi_saari_img = tk.PhotoImage(file="uusisaari.png").subsample(4, 4)    # Kaikkien muiden saarien kuva
+# Kuvat 
+# Subsamplellä pienennetään kuvia
+ensimmainen_saari_img = tk.PhotoImage(file="saari.png").subsample(8, 8)  
+uusi_saari_img = tk.PhotoImage(file="uusisaari.png").subsample(4, 4)   
+apina_img = tk.PhotoImage(file="monkey.png").subsample(20, 20)  
+shark_img = tk.PhotoImage(file="shark.png").subsample(10, 10)  
 
-# Ladataan apinan kuva
-apina_img = tk.PhotoImage(file="monkey.png").subsample(20, 20)  # Pienennetään apinan kuva
-
-# Ladataan hain kuva
-shark_img = tk.PhotoImage(file="shark.png").subsample(10, 10)  # Pienennetään hain kuva
-
-# Saarten tietojen tallentaminen (koko ja sijainti)
+# Saarten tietojen tallentaminen 
 saaret = []
-saari_laskuri = 1  # Ensimmäisen saaren nimi on s1, seuraavan s2 jne.
-apinat_lkm_label = None  # Apinoiden lukumäärän label
-matka_label = None  # Matkalaskurin label
+saari_laskuri = 1  
+apinat_lkm_label = None 
+matka_label = None  
 
-# Määritetään saaren koko siten, että merelle mahtuu noin 10 saarta
-saari_koko = 80  # Tämä on saaren kuvakkeen oletuskoko
+# Määritetään saaren koko
+saari_koko = 80  
 min_etaisyys = 100  # Määritetään minimietäisyys saarien välille
 
 # Funktio, joka tarkistaa, osuuko uusi saari liian lähelle aiempia saaria
@@ -49,22 +45,21 @@ def onko_paatteinen(x, y):
     return False
 
 # Funktio, joka tarkistaa apinan kuoleman riskin
+# Käytetään samaa prosenttia haille ja nauramiselle
 def tarkista_kuolema():
     return random.random() < 0.01  # 1% riski
 
 # Funktio, joka tarkistaa saarella olevat apinat ja poistaa kuolleet
 def tarkista_apinat_kuolema(saari):
     apinat = saari['apinat']
-    kuolleet = 0  # Lasketaan kuolleiden määrä
     for apina in apinat[:]:  # Käytetään viipaletta, jotta voimme muokata listaa
-        if tarkista_kuolema():  # Tarkistetaan kuoleman riski
+        if tarkista_kuolema():  # Käytetään yhteistä kuolemanriskiprosenttia
             winsound.PlaySound("nauru.wav", winsound.SND_FILENAME)
             canvas.delete(apina['obj'])  # Poistetaan apina kanvaalta
             apinat.remove(apina)  # Poistetaan apina listasta
-            kuolleet += 1  # Lisätään kuollut
 
     # Päivitetään apinoiden määrä käyttöliittymässä
-    paivita_apinat_lkm()  # Tämä kutsu ei vaadi argumenttia
+    paivita_apinat_lkm()  
 
 # Funktio, joka tarkistaa kaikkien saarten apinat kymmenen sekunnin välein
 def tarkista_kuolemat():
@@ -86,7 +81,7 @@ def tuota_apina_aanet(apinat):
             for apina in apinat:
                 taajuus = apina['taajuus']
                 apinan_aantely(taajuus)
-                time.sleep(random.randint(8, 12))  # Odota 8-12 sekuntia
+                time.sleep(random.randint(8, 12))  # Odottaa 8-12 sekuntia ennen uutta ääntä
         else:
             time.sleep(1)  # Odotetaan hetki ennen tarkistamista uudelleen
             print("EI taajuuksia")
@@ -95,16 +90,14 @@ def tuota_apina_aanet(apinat):
 # Funktio, joka lisää 10 apinaa saarelle
 def lisaa_apinat_saarelle(x, y, matkustaa=False):
     global apinat
-    apinat = []  # Tyhjennetään apinoiden lista
+    apinat = []  
     taajuus = random.randint(400, 2000)  # Luodaan satunnainen taajuus
 
-    for i in range(20):  # Lisää 10 apinaa
+    for i in range(20):  # Lisää 20 apinaa
         apina_x = random.randint(x - saari_koko // 3, x + saari_koko // 3)
         apina_y = random.randint(y - saari_koko // 3, y + saari_koko // 3)
         
         apina_obj = canvas.create_image(apina_x, apina_y, image=apina_img)
-        
-        # Luodaan apinan sanakirja, jossa on osaa_matkustaa
         apinat.append({'x': apina_x, 'y': apina_y, 'taajuus': taajuus, 'obj': apina_obj, 'osaa_matkustaa': matkustaa})
 
     if apinat:  # Varmistetaan, että apinoita on, ennen kuin aloitetaan äänet
@@ -113,7 +106,7 @@ def lisaa_apinat_saarelle(x, y, matkustaa=False):
     return apinat  # Palautetaan apinoiden lista
 
 
-# Funktio, joka luo uuden satunnaisen saaren (käyttäen uusisaari.png)
+# Luodaan satunnainen saari
 def luo_satunnainen_saari():
     global saari_laskuri  # Tuodaan saari_laskuri globaaliksi
 
@@ -153,7 +146,7 @@ def luo_satunnainen_saari():
     paivita_apinat_lkm()  # Päivitetään apinoiden määrä saaren lisäämisen yhteydessä
 
 
-# Luo ensimmäinen saari keskelle merta (käyttäen saari.png)
+# Luo ensimmäinen saari keskelle merta 
 def luo_ensimmainen_saari():
     global saari_laskuri, aanet_soimassa
     aanet_soimassa = True
@@ -358,7 +351,7 @@ def tarkista_uimataito():
             
             # Kaikki apinat oppivat matkustamaan, kun laiturit lisätään
             for apina in saari['apinat']:
-                apina['osaa_matkustaa'] = True  # Asetetaan osaa_matkustaa todeksi kaikille apinoille
+                apina['osaa_matkustaa'] = True  # Asetetaan osaa_matkustaa todeksi kaikille apinoille samalla saarella
 
 def tarkista_uimataito_thread():
     while True:
@@ -368,9 +361,8 @@ def tarkista_uimataito_thread():
 # Käynnistä tarkistussäie
 threading.Thread(target=tarkista_uimataito_thread, daemon=True).start()
 
-
+# Tarkistetaan osaako apinat uida jokaiselta saarelta erikseen
 def tarkista_saaret_ja_apinat():
-    """Tarkistaa jokaisen saaren apinat ja raportoidaan niiden uintikyvystä."""
     for saari in saaret:
         print(f"Saari {saari['nimi']}:")
         if saari['apinat']:
@@ -381,32 +373,33 @@ def tarkista_saaret_ja_apinat():
             print("  Ei apinoita")
     print("\nTarkistus valmis.")
 
-# Luo käyttöliittymään nappi tulivuorenpurkaus
+# Tulivuorenpurkaus nappi
 tulivuorenpurkaus_nappi = tk.Button(root, text="Tulivuorenpurkaus", command=luo_satunnainen_saari)
 tulivuorenpurkaus_nappi.pack()
 
-# Luo käyttöliittymään nappi saarten tyhjentämiselle
+# Saaren tyhjentämis nappi
 tyhjenna_nappi = tk.Button(root, text="Tyhjennä saaret", command=tyhjennä_saaret)
 tyhjenna_nappi.pack()
 
-# Luo käyttöliittymään nappi apinan lähettämiseksi uimaan
+# Nappi lähettämään apina uimaan
 lahetta_apina_nappi = tk.Button(root, text="Lähetä apina uimaan", command=lahetta_apina_uimaan)
 lahetta_apina_nappi.pack()
 
-# Luodaan nappi, joka aloittaa apinoiden lähettämisen
+# Nappi lähettämään 10 apinaa uimaan
 laheta_button = tk.Button(root, text="Lähetä 10 apinaa uimaan", command=lambda: threading.Thread(target=laheta_10_apinaa_uimaan, daemon=True).start())
 laheta_button.pack()
 
-# Luo label apinoiden eloonjäämislaskurille
+# Apinoitten määrän seurantaa.
 apinat_lkm_label = tk.Label(root, text="Apinoita elossa: 0")
 apinat_lkm_label.pack()
 
 tarkistusnappi = tk.Button(root, text="Tarkista saaret ja apinat", command=tarkista_saaret_ja_apinat)
 tarkistusnappi.pack(pady=5)
+
 # Käynnistetään säie kuoleman tarkistamiselle
 threading.Thread(target=tarkista_kuolemat, daemon=True).start()
 
-# Luodaan ensimmäinen saari
+# Luodaan ensimmäinen saari, en jaksa siirtää 
 luo_ensimmainen_saari()
 
 # Ajetaan pääsilmukka
