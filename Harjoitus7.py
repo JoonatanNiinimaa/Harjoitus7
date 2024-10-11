@@ -254,14 +254,16 @@ def lahetta_apina_uimaan():
                 apina = random.choice(uivat_apinat)  # Valitaan satunnainen apina
                 saari['apinat'].remove(apina)  # Poistetaan apina saaresta
 
+                paivita_apinat_lkm()
+
                 # Lasketaan laiturien sijainnit
                 x = saari['x']
                 y = saari['y']
                 laiturit = [
-                    (x, y - saari_koko // 2),  # Pohjoinen
-                    (x + saari_koko // 2, y),  # Itäinen
-                    (x, y + saari_koko // 2),  # Eteläinen
-                    (x - saari_koko // 2, y)   # Lännen
+                    (x, y - saari_koko // 2 - 15),  # Pohjoinen laiturin paikka
+                    (x + saari_koko // 2 + 15, y),  # Itäinen laiturin paikka
+                    (x, y + saari_koko // 2 + 15),  # Eteläinen laiturin paikka
+                    (x - saari_koko // 2 - 15, y)   # Läntinen laiturin paikka
                 ]
                 
                 # Valitaan satunnainen laiturin sijainti
@@ -270,6 +272,7 @@ def lahetta_apina_uimaan():
                 # Liikuta apinaa laiturille ensin
                 canvas.move(apina['obj'], laiturin_sijainti[0] - apina['x'], laiturin_sijainti[1] - apina['y'])
                 apina['x'], apina['y'] = laiturin_sijainti  # Aseta apina laiturille
+                time.sleep(1)
                 
                 # Aloita uinnin satunnaiset suuntia
                 def ui_satunnaisesti():
@@ -294,7 +297,6 @@ def lahetta_apina_uimaan():
 
                         # Siirretään apinaa kanvassa
                         canvas.coords(apina['obj'], apina['x'], apina['y'])
-                        winsound.PlaySound("swim_sound.wav", winsound.SND_FILENAME | winsound.SND_ASYNC)  
                         canvas.update()  # Päivitä canvas
 
                         # Tarkista, kuoleeko apina hain hyökkäyksessä
@@ -307,6 +309,8 @@ def lahetta_apina_uimaan():
                             saari['apinat'].remove(apina)  # Poista apina saaresta
                             paivita_apinat_lkm()  # Päivitä apinoiden määrä
                             return  # Lopeta apinan uiminen, koska apina kuoli
+
+                        winsound.PlaySound("swim_sound.wav", winsound.SND_FILENAME | winsound.SND_ASYNC)  
 
                         # Tarkista, onko apina päässyt millekään muulle saarelle
                         for kohdesaari in saaret:
@@ -351,14 +355,31 @@ def tarkista_uimataito():
         
         if uimaan_osaa:
             lisaa_laiturit(saari['x'], saari['y'], saari_nimi)
+            
+            # Kaikki apinat oppivat matkustamaan, kun laiturit lisätään
+            for apina in saari['apinat']:
+                apina['osaa_matkustaa'] = True  # Asetetaan osaa_matkustaa todeksi kaikille apinoille
 
 def tarkista_uimataito_thread():
     while True:
         tarkista_uimataito()
         time.sleep(5)
 
+# Käynnistä tarkistussäie
 threading.Thread(target=tarkista_uimataito_thread, daemon=True).start()
 
+
+def tarkista_saaret_ja_apinat():
+    """Tarkistaa jokaisen saaren apinat ja raportoidaan niiden uintikyvystä."""
+    for saari in saaret:
+        print(f"Saari {saari['nimi']}:")
+        if saari['apinat']:
+            for i, apina in enumerate(saari['apinat']):
+                osaa_uida = "Osaa uida" if apina['osaa_matkustaa'] else "Ei osaa uida"
+                print(f"  Apina {i + 1}: {osaa_uida}")
+        else:
+            print("  Ei apinoita")
+    print("\nTarkistus valmis.")
 
 # Luo käyttöliittymään nappi tulivuorenpurkaus
 tulivuorenpurkaus_nappi = tk.Button(root, text="Tulivuorenpurkaus", command=luo_satunnainen_saari)
@@ -380,6 +401,8 @@ laheta_button.pack()
 apinat_lkm_label = tk.Label(root, text="Apinoita elossa: 0")
 apinat_lkm_label.pack()
 
+tarkistusnappi = tk.Button(root, text="Tarkista saaret ja apinat", command=tarkista_saaret_ja_apinat)
+tarkistusnappi.pack(pady=5)
 # Käynnistetään säie kuoleman tarkistamiselle
 threading.Thread(target=tarkista_kuolemat, daemon=True).start()
 
